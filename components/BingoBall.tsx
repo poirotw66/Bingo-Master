@@ -1,5 +1,5 @@
 import React from 'react';
-import { getLetterForNumber, BingoTheme } from '../types';
+import { getLetterForNumber, BingoTheme, BingoLetter } from '../types';
 
 interface BingoBallProps {
   number: number;
@@ -26,6 +26,14 @@ const NEON_COLORS = {
   'N': 'bg-slate-900 border-green-500 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]',
   'G': 'bg-slate-900 border-yellow-500 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]',
   'O': 'bg-slate-900 border-purple-500 text-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]',
+};
+
+const NEON_GLOW_BG: Record<BingoLetter, string> = {
+  'B': 'bg-red-500',
+  'I': 'bg-blue-500',
+  'N': 'bg-green-500',
+  'G': 'bg-yellow-500',
+  'O': 'bg-purple-500',
 };
 
 const MINIMALIST_COLORS = {
@@ -146,7 +154,7 @@ export const BingoBall: React.FC<BingoBallProps> = ({
       
       {/* Neon Glow effect inside */}
       {theme === 'neon' && active && (
-        <div className={`absolute inset-0 rounded-full blur-[10px] opacity-40 ${NEON_COLORS[letter].split(' ')[1].replace('border-', 'bg-')}`}></div>
+        <div className={`absolute inset-0 rounded-full blur-[10px] opacity-40 ${NEON_GLOW_BG[letter]}`}></div>
       )}
       
       <span className={`relative ${theme === 'neon' && active ? 'drop-shadow-[0_0_8px_currentColor]' : 'drop-shadow-md'}`}>

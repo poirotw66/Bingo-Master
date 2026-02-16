@@ -1,6 +1,13 @@
-# Bingo Master 75
+# Bingo Master
 
-A professional Bingo 75 (1–75) caller and scoreboard app built with React and Vite.
+A professional Bingo caller and scoreboard app built with React and Vite. Draw numbers from a custom range (default 1–75), switch themes, and keep history in the browser.
+
+## Features
+
+- **Custom draw range** — Set min and max (1–200) in Settings. Default is 1–75 (classic Bingo 75).
+- **Multiple themes** — Classic 3D, Neon Glow, Minimalist, New Year Festival, Ocean, Snow, Forest. Switch in Settings.
+- **History in browser** — Current game and past sessions are saved to `localStorage`. Clearing site data will remove them.
+- **Full History & search** — Open the history rail to see all drawn numbers; use the search box to find a specific number in the current run.
 
 ## Live Demo
 
@@ -42,4 +49,5 @@ The repo is set up to deploy to GitHub Pages via GitHub Actions.
 ## Tech Stack
 
 - React 19, TypeScript, Vite 6
-- Tailwind CSS (CDN)
+- Tailwind CSS (build-time)
+- PWA (manifest + service worker for install & offline)

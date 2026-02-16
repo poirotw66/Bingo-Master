@@ -14,6 +14,12 @@ export interface BingoGameActions {
   clearSavedHistory: () => void;
 }
 
+function handleStorageError(err: unknown): void {
+  if (err instanceof DOMException && err.name === 'QuotaExceededError') {
+    window.alert('儲存空間已滿，無法儲存進度。請清除瀏覽器資料後再試。');
+  }
+}
+
 const DEFAULT_SETTINGS: GameSettings = {
   autoPlaySpeed: 4000,
   volume: 0.5,
@@ -87,7 +93,7 @@ export const useBingoGame = () => {
     if (isMuted) return;
 
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!audioContextRef.current) {
         audioContextRef.current = new AudioContextClass();
       }
@@ -139,8 +145,8 @@ export const useBingoGame = () => {
           createOsc(f, 'triangle', ctx.currentTime + i * 0.1, 0.6, 0.1);
         });
       }
-    } catch (e) {
-      console.warn("Audio failed", e);
+    } catch {
+      // Audio may be blocked by browser policy or unavailable
     }
   }, [isMuted, settings.volume]);
 
@@ -207,7 +213,9 @@ export const useBingoGame = () => {
         const next = [session, ...s].slice(0, MAX_SAVED_SESSIONS);
         try {
           localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify({ sessions: next }));
-        } catch { /* ignore */ }
+        } catch (e) {
+          handleStorageError(e);
+        }
         return next;
       });
     }
@@ -223,7 +231,9 @@ export const useBingoGame = () => {
       try {
         const { drawnNumbers: dn, settings: s } = latestForStorageRef.current;
         localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify({ drawnNumbers: dn, settings: s }));
-      } catch { /* ignore */ }
+      } catch (e) {
+        handleStorageError(e);
+      }
       storageTimeoutRef.current = null;
     }, 400);
     return () => {
@@ -235,7 +245,9 @@ export const useBingoGame = () => {
     setSavedSessions([]);
     try {
       localStorage.removeItem(STORAGE_KEY_HISTORY);
-    } catch { /* ignore */ }
+    } catch (e) {
+      handleStorageError(e);
+    }
   }, []);
 
   const toggleAutoPlay = useCallback(() => {

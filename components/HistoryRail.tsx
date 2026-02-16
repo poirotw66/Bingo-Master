@@ -11,8 +11,12 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
   return (
     <>
       <div 
+        role={drawnNumbers.length > 0 ? 'button' : undefined}
+        tabIndex={drawnNumbers.length > 0 ? 0 : undefined}
         onClick={() => drawnNumbers.length > 0 && setIsModalOpen(true)}
-        className={`w-full bg-slate-900/90 border-t border-white/5 backdrop-blur-xl transition-all cursor-pointer group active:bg-slate-800/90 ${drawnNumbers.length > 0 ? 'hover:bg-slate-800/80' : 'cursor-default'}`}
+        onKeyDown={(e) => drawnNumbers.length > 0 && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setIsModalOpen(true))}
+        aria-label={drawnNumbers.length > 0 ? 'View full draw history' : undefined}
+        className={`w-full bg-slate-900/90 border-t border-white/5 backdrop-blur-xl transition-colors duration-200 group ${drawnNumbers.length > 0 ? 'hover:bg-slate-800/80 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-inset active:bg-slate-800/90' : 'cursor-default'}`}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between mb-2">
@@ -56,12 +60,12 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
           ></div>
           
           {/* Modal Content */}
-          <div className="relative w-full max-w-2xl bg-slate-900 border-t sm:border border-white/10 rounded-t-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[80vh] animate-slide-up">
+          <div className="relative w-full max-w-2xl bg-slate-900 border-t sm:border border-white/10 rounded-t-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[80vh] animate-slide-up" role="dialog" aria-modal="true" aria-labelledby="history-title">
             
             {/* Modal Header */}
             <div className="p-6 sm:p-8 border-b border-white/5 flex items-center justify-between sticky top-0 bg-slate-900/80 backdrop-blur-md z-10">
               <div>
-                <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                <h3 id="history-title" className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
                   Full History
                   <span className="text-sm font-bold bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20">
                     {drawnNumbers.length}
@@ -71,7 +75,8 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="p-3 rounded-2xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all active:scale-90"
+                className="p-3 rounded-2xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:opacity-90"
+                aria-label="Close history"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
@@ -106,7 +111,8 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
             <div className="p-4 bg-slate-950/50 border-t border-white/5 text-center">
                <button 
                 onClick={() => setIsModalOpen(false)}
-                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-white text-slate-950 font-black text-sm uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95"
+                className="w-full sm:w-auto px-8 py-3 rounded-xl bg-white text-slate-950 font-black text-sm uppercase tracking-widest hover:bg-indigo-50 transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:opacity-95"
+                aria-label="Close history"
                >
                  Close History
                </button>
@@ -129,6 +135,9 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
         }
         .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
         .animate-slide-up { animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-fade-in, .animate-slide-up { animation: none; opacity: 1; transform: none; }
+        }
       `}} />
     </>
   );

@@ -61,6 +61,8 @@ export const useBingoGame = () => {
   const rollingIntervalRef = useRef<number | null>(null);
   const storageTimeoutRef = useRef<number | null>(null);
   const latestForStorageRef = useRef({ drawnNumbers, settings });
+  const latestDrawnNumbersRef = useRef<number[]>(drawnNumbers);
+  latestDrawnNumbersRef.current = drawnNumbers;
 
   const drawnSet = useMemo(() => new Set<number>(drawnNumbers), [drawnNumbers]);
   const isFinished = drawnNumbers.length >= 75;
@@ -181,19 +183,18 @@ export const useBingoGame = () => {
     setIsAutoPlaying(false);
     setIsRolling(false);
     setRollingValue(null);
-    setDrawnNumbers(prev => {
-      if (prev.length > 0) {
-        const session: SavedSession = { id: `session-${Date.now()}`, drawnNumbers: [...prev], createdAt: Date.now() };
-        setSavedSessions(s => {
-          const next = [session, ...s].slice(0, MAX_SAVED_SESSIONS);
-          try {
-            localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify({ sessions: next }));
-          } catch { /* ignore */ }
-          return next;
-        });
-      }
-      return [];
-    });
+    const current = latestDrawnNumbersRef.current;
+    if (current.length > 0) {
+      const session: SavedSession = { id: `session-${Date.now()}`, drawnNumbers: [...current], createdAt: Date.now() };
+      setSavedSessions(s => {
+        const next = [session, ...s].slice(0, MAX_SAVED_SESSIONS);
+        try {
+          localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify({ sessions: next }));
+        } catch { /* ignore */ }
+        return next;
+      });
+    }
+    setDrawnNumbers([]);
     setCurrentNumber(null);
     playSound('reset');
   }, [playSound]);

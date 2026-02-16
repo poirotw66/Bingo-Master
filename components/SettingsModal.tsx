@@ -1,0 +1,101 @@
+import React from 'react';
+import { GameSettings, BingoTheme } from '../types';
+
+interface SettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  settings: GameSettings;
+  onUpdate: (newSettings: Partial<GameSettings>) => void;
+}
+
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings, onUpdate }) => {
+  if (!isOpen) return null;
+
+  const themes: { id: BingoTheme; name: string }[] = [
+    { id: 'classic', name: 'Classic 3D' },
+    { id: 'neon', name: 'Neon Glow' },
+    { id: 'minimalist', name: 'Minimalist' },
+  ];
+
+  const speeds = [
+    { value: 6000, label: 'Slow' },
+    { value: 4000, label: 'Normal' },
+    { value: 2000, label: 'Fast' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose}></div>
+      
+      <div className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up">
+        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+          <h3 className="text-xl font-black text-white uppercase tracking-tight">Game Settings</h3>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div className="p-6 space-y-8">
+          {/* Volume Setting */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Master Volume</label>
+              <span className="text-xs font-bold text-indigo-400">{Math.round(settings.volume * 100)}%</span>
+            </div>
+            <input 
+              type="range" 
+              min="0" max="1" step="0.01" 
+              value={settings.volume} 
+              onChange={(e) => onUpdate({ volume: parseFloat(e.target.value) })}
+              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+            />
+          </div>
+
+          {/* Auto-play Speed */}
+          <div className="space-y-3">
+            <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Auto-Draw Speed</label>
+            <div className="grid grid-cols-3 gap-2">
+              {speeds.map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => onUpdate({ autoPlaySpeed: s.value })}
+                  className={`py-2 rounded-xl text-xs font-bold transition-all ${settings.autoPlaySpeed === s.value ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ball Theme */}
+          <div className="space-y-3">
+            <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Visual Theme</label>
+            <div className="flex flex-col gap-2">
+              {themes.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => onUpdate({ theme: t.id })}
+                  className={`flex items-center justify-between p-4 rounded-2xl transition-all border ${settings.theme === t.id ? 'bg-indigo-500/10 border-indigo-500/50 text-white' : 'bg-slate-800/50 border-white/5 text-slate-400 hover:border-white/10'}`}
+                >
+                  <span className="font-bold">{t.name}</span>
+                  {settings.theme === t.id && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 bg-slate-950/30 border-t border-white/5">
+          <button 
+            onClick={onClose}
+            className="w-full py-4 bg-white text-slate-950 font-black rounded-2xl uppercase tracking-widest text-sm hover:bg-slate-200 transition-colors active:scale-95"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

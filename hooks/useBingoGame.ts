@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession, isValidBingoTheme } from '../types';
+import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession, isValidBingoTheme, DRAW_RANGE_MIN, DRAW_RANGE_MAX } from '../types';
 
 const STORAGE_KEY_CURRENT = 'bingo-master-current';
 const STORAGE_KEY_HISTORY = 'bingo-master-history';
@@ -18,18 +18,31 @@ const DEFAULT_SETTINGS: GameSettings = {
   autoPlaySpeed: 4000,
   volume: 0.5,
   theme: 'classic',
+  minNumber: 1,
+  maxNumber: 75,
 };
+
+function clampRange(min: number, max: number): { minNumber: number; maxNumber: number } {
+  const minNumber = Math.max(DRAW_RANGE_MIN, Math.min(DRAW_RANGE_MAX, Math.floor(min)));
+  const maxNumber = Math.max(DRAW_RANGE_MIN, Math.min(DRAW_RANGE_MAX, Math.floor(max)));
+  if (minNumber >= maxNumber) return { minNumber, maxNumber: minNumber + 1 };
+  return { minNumber, maxNumber };
+}
 
 function loadCurrentFromStorage(): { drawnNumbers: number[]; settings: GameSettings } | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_CURRENT);
     if (!raw) return null;
     const data = JSON.parse(raw) as { drawnNumbers?: unknown; settings?: unknown };
-    const drawn = Array.isArray(data.drawnNumbers) ? data.drawnNumbers.filter((n): n is number => typeof n === 'number' && n >= 1 && n <= 75) : [];
+    const drawn = Array.isArray(data.drawnNumbers) ? data.drawnNumbers.filter((n): n is number => typeof n === 'number') : [];
     const rawSettings = data.settings && typeof data.settings === 'object' ? data.settings as Record<string, unknown> : {};
     const theme = isValidBingoTheme(rawSettings.theme) ? rawSettings.theme : DEFAULT_SETTINGS.theme;
-    const settings = { ...DEFAULT_SETTINGS, ...rawSettings, theme };
-    return { drawnNumbers: drawn, settings };
+    const rawMin = typeof rawSettings.minNumber === 'number' ? rawSettings.minNumber : DEFAULT_SETTINGS.minNumber;
+    const rawMax = typeof rawSettings.maxNumber === 'number' ? rawSettings.maxNumber : DEFAULT_SETTINGS.maxNumber;
+    const { minNumber, maxNumber } = clampRange(rawMin, rawMax);
+    const settings = { ...DEFAULT_SETTINGS, ...rawSettings, theme, minNumber, maxNumber };
+    const validDrawn = drawn.filter((n) => n >= minNumber && n <= maxNumber);
+    return { drawnNumbers: validDrawn, settings };
   } catch {
     return null;
   }
@@ -67,7 +80,8 @@ export const useBingoGame = () => {
   latestDrawnNumbersRef.current = drawnNumbers;
 
   const drawnSet = useMemo(() => new Set<number>(drawnNumbers), [drawnNumbers]);
-  const isFinished = drawnNumbers.length >= 75;
+  const totalNumbers = settings.maxNumber - settings.minNumber + 1;
+  const isFinished = drawnNumbers.length >= totalNumbers;
 
   const playSound = useCallback((type: 'draw' | 'reset' | 'roll' | 'click' | 'bingo') => {
     if (isMuted) return;
@@ -133,19 +147,20 @@ export const useBingoGame = () => {
   const drawNumber = useCallback(() => {
     if (isFinished || isRolling) return;
 
-    const available = [];
-    for (let i = 1; i <= 75; i++) {
+    const { minNumber: min, maxNumber: max } = settings;
+    const available: number[] = [];
+    for (let i = min; i <= max; i++) {
       if (!drawnSet.has(i)) available.push(i);
     }
 
     if (available.length === 0) return;
 
     setIsRolling(true);
-    
+    const span = max - min + 1;
     let ticks = 0;
     const maxTicks = 15;
     const interval = window.setInterval(() => {
-      const tempRandom = Math.floor(Math.random() * 75) + 1;
+      const tempRandom = min + Math.floor(Math.random() * span);
       setRollingValue(tempRandom);
       playSound('roll');
       ticks++;
@@ -166,19 +181,19 @@ export const useBingoGame = () => {
     }, 60);
     
     rollingIntervalRef.current = interval;
-  }, [drawnSet, isFinished, isRolling, playSound]);
+  }, [drawnSet, isFinished, isRolling, playSound, settings.minNumber, settings.maxNumber]);
 
   useEffect(() => {
     if (drawnNumbers.length > 0 && !isRolling) {
       const latest = drawnNumbers[0];
       setCurrentNumber({
         value: latest,
-        letter: getLetterForNumber(latest),
+        letter: getLetterForNumber(latest, settings.minNumber, settings.maxNumber),
       });
     } else if (drawnNumbers.length === 0) {
       setCurrentNumber(null);
     }
-  }, [drawnNumbers, isRolling]);
+  }, [drawnNumbers, isRolling, settings.minNumber, settings.maxNumber]);
 
   const resetGame = useCallback(() => {
     if (rollingIntervalRef.current) window.clearInterval(rollingIntervalRef.current);
@@ -234,7 +249,21 @@ export const useBingoGame = () => {
   }, []);
 
   const updateSettings = useCallback((newSettings: Partial<GameSettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+    const newMin = newSettings.minNumber;
+    const newMax = newSettings.maxNumber;
+    if (typeof newMin === 'number' || typeof newMax === 'number') {
+      setSettings(prev => {
+        const merged = { ...prev, ...newSettings };
+        const min = typeof newMin === 'number' ? newMin : prev.minNumber;
+        const max = typeof newMax === 'number' ? newMax : prev.maxNumber;
+        const { minNumber, maxNumber } = clampRange(min, max);
+        const final = { ...merged, minNumber, maxNumber };
+        setDrawnNumbers(prevDrawn => prevDrawn.filter(n => n >= final.minNumber && n <= final.maxNumber));
+        return final;
+      });
+    } else {
+      setSettings(prev => ({ ...prev, ...newSettings }));
+    }
   }, []);
 
   useEffect(() => {

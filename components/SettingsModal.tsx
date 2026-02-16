@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GameSettings, BingoTheme, SavedSession } from '../types';
+import { GameSettings, BingoTheme, SavedSession, DRAW_RANGE_MIN, DRAW_RANGE_MAX } from '../types';
 import { BingoBall } from './BingoBall';
 
 interface SettingsModalProps {
@@ -79,6 +79,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
             />
           </div>
 
+          {/* Draw range */}
+          <div className="space-y-3">
+            <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Draw Range</label>
+            <p className="text-slate-500 text-xs">Numbers drawn from Min to Max (default 1–75).</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label htmlFor="setting-min" className="text-xs font-bold text-slate-400">Min</label>
+                <input
+                  id="setting-min"
+                  type="number"
+                  min={DRAW_RANGE_MIN}
+                  max={DRAW_RANGE_MAX}
+                  value={settings.minNumber}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (!Number.isNaN(v)) onUpdate({ minNumber: Math.max(DRAW_RANGE_MIN, Math.min(DRAW_RANGE_MAX, v)) });
+                  }}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-white/10 text-white font-bold outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  aria-label="Minimum draw number"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="setting-max" className="text-xs font-bold text-slate-400">Max</label>
+                <input
+                  id="setting-max"
+                  type="number"
+                  min={DRAW_RANGE_MIN}
+                  max={DRAW_RANGE_MAX}
+                  value={settings.maxNumber}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (!Number.isNaN(v)) onUpdate({ maxNumber: Math.max(DRAW_RANGE_MIN, Math.min(DRAW_RANGE_MAX, v)) });
+                  }}
+                  className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-white/10 text-white font-bold outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  aria-label="Maximum draw number"
+                />
+              </div>
+            </div>
+            {settings.minNumber >= settings.maxNumber && (
+              <p className="text-red-400 text-xs">Min must be less than Max.</p>
+            )}
+          </div>
+
           {/* Auto-play Speed */}
           <div className="space-y-3">
             <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Auto-Draw Speed</label>
@@ -150,7 +193,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                       <div className="p-3 pt-0 border-t border-white/5">
                         <div className="flex flex-wrap gap-2">
                           {session.drawnNumbers.map((num, idx) => (
-                            <BingoBall key={`${session.id}-${idx}`} number={num} size="sm" active={true} theme={settings.theme} />
+                            <BingoBall key={`${session.id}-${idx}`} number={num} size="sm" active={true} theme={settings.theme} minNumber={settings.minNumber} maxNumber={settings.maxNumber} />
                           ))}
                         </div>
                       </div>

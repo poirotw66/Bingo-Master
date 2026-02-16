@@ -8,8 +8,9 @@ interface ControlPanelProps {
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({ gameState, actions }) => {
-  const { isAutoPlaying, isFinished, drawnNumbers, isRolling, isMuted } = gameState;
+  const { isAutoPlaying, isFinished, drawnNumbers, isRolling, isMuted, settings } = gameState;
   const count = drawnNumbers.length;
+  const total = settings.maxNumber - settings.minNumber + 1;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
@@ -17,7 +18,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ gameState, actions }
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-slate-900/60 p-3 rounded-2xl border border-white/10 flex flex-col items-center">
           <span className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Drawn</span>
-          <span className="text-white text-2xl font-black">{count} <span className="text-slate-600 text-sm">/ 75</span></span>
+          <span className="text-white text-2xl font-black">{count} <span className="text-slate-600 text-sm">/ {total}</span></span>
         </div>
         <button 
           onClick={actions.toggleMute}

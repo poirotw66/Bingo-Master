@@ -57,6 +57,8 @@ export default function App() {
                     size="giant" 
                     animate={false} 
                     theme={settings.theme}
+                    minNumber={settings.minNumber}
+                    maxNumber={settings.maxNumber}
                     className="z-10 blur-[1px]"
                   />
                   <div className="absolute -top-3 -right-3 sm:-top-6 sm:-right-6 bg-amber-500 text-amber-950 font-black px-3 py-1 sm:px-5 sm:py-2 rounded-lg sm:rounded-2xl shadow-2xl border-2 border-amber-200 transform -rotate-12 text-[10px] sm:text-sm uppercase tracking-tighter">
@@ -70,6 +72,8 @@ export default function App() {
                     size="giant" 
                     animate={true} 
                     theme={settings.theme}
+                    minNumber={settings.minNumber}
+                    maxNumber={settings.maxNumber}
                     className="z-10"
                   />
                   <div className="absolute -top-3 -right-3 sm:-top-6 sm:-right-6 bg-white text-indigo-950 font-black px-3 py-1 sm:px-5 sm:py-2 rounded-lg sm:rounded-2xl shadow-2xl border-2 border-indigo-200 transform rotate-12 animate-bounce-small text-[10px] sm:text-sm uppercase tracking-tighter">
@@ -93,16 +97,16 @@ export default function App() {
         <div className="w-full max-w-5xl animate-fade-in-up shrink-0 pb-20 sm:pb-32">
           <div className="flex items-center gap-3 mb-4 sm:mb-6 px-2">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-800"></div>
-            <h2 className="text-slate-500 font-bold text-[10px] sm:text-xs tracking-[0.3em] uppercase">Scoreboard 75</h2>
+            <h2 className="text-slate-500 font-bold text-[10px] sm:text-xs tracking-[0.3em] uppercase">Scoreboard {settings.maxNumber - settings.minNumber + 1}</h2>
             <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-800"></div>
           </div>
-          <MasterBoard drawnSet={allDrawnSet} />
+          <MasterBoard minNumber={settings.minNumber} maxNumber={settings.maxNumber} drawnSet={allDrawnSet} />
         </div>
 
       </main>
 
       <footer className="z-20 fixed bottom-0 left-0 right-0">
-        <HistoryRail drawnNumbers={drawnNumbers} />
+        <HistoryRail drawnNumbers={drawnNumbers} minNumber={settings.minNumber} maxNumber={settings.maxNumber} />
       </footer>
 
       <SettingsModal 

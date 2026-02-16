@@ -8,6 +8,8 @@ interface BingoBallProps {
   animate?: boolean;
   className?: string;
   theme?: BingoTheme;
+  minNumber?: number;
+  maxNumber?: number;
 }
 
 const CLASSIC_COLORS = {
@@ -84,9 +86,11 @@ export const BingoBall: React.FC<BingoBallProps> = ({
   active = true,
   animate = false,
   className = '',
-  theme = 'classic'
+  theme = 'classic',
+  minNumber = 1,
+  maxNumber = 75
 }) => {
-  const letter = getLetterForNumber(number);
+  const letter = getLetterForNumber(number, minNumber, maxNumber);
   
   let colorClass = '';
   if (!active) {

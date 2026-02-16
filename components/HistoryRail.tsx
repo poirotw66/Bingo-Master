@@ -3,9 +3,11 @@ import { BingoBall } from './BingoBall';
 
 interface HistoryRailProps {
   drawnNumbers: number[];
+  minNumber: number;
+  maxNumber: number;
 }
 
-export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
+export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers, minNumber, maxNumber }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
             <div className="flex gap-2.5 sm:gap-4 overflow-x-auto pb-2 no-scrollbar snap-x">
               {drawnNumbers.map((num, idx) => (
                 <div key={`${num}-${idx}`} className="snap-start flex-shrink-0 animate-pop-in">
-                  <BingoBall number={num} size="sm" active={true} />
+                  <BingoBall number={num} size="sm" active={true} minNumber={minNumber} maxNumber={maxNumber} />
                 </div>
               ))}
             </div>
@@ -100,7 +102,7 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
                       className="flex flex-col items-center gap-2 group"
                     >
                       <div className="relative">
-                        <BingoBall number={num} size="md" active={true} className="group-hover:ring-2 group-hover:ring-indigo-400 group-hover:ring-offset-2 group-hover:ring-offset-slate-900 transition-all duration-200" />
+                        <BingoBall number={num} size="md" active={true} minNumber={minNumber} maxNumber={maxNumber} className="group-hover:ring-2 group-hover:ring-indigo-400 group-hover:ring-offset-2 group-hover:ring-offset-slate-900 transition-all duration-200" />
                         <div className="absolute -top-1 -right-1 w-6 h-6 bg-slate-800 rounded-full flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-700 shadow-lg">
                           #{order}
                         </div>

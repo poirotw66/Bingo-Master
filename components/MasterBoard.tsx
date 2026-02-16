@@ -1,15 +1,22 @@
 import React from 'react';
-import { BINGO_COLUMNS } from '../types';
+import { getColumnsForRange } from '../types';
 
 interface MasterBoardProps {
+  minNumber: number;
+  maxNumber: number;
   drawnSet: Set<number>;
 }
 
-export const MasterBoard: React.FC<MasterBoardProps> = ({ drawnSet }) => {
+export const MasterBoard: React.FC<MasterBoardProps> = ({ minNumber, maxNumber, drawnSet }) => {
+  const columns = getColumnsForRange(minNumber, maxNumber);
+
   return (
     <div className="bg-slate-900/40 p-3 sm:p-8 rounded-2xl sm:rounded-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] backdrop-blur-md overflow-hidden">
       <div className="grid grid-cols-5 gap-1.5 sm:gap-6">
-        {BINGO_COLUMNS.map((col) => (
+        {columns.map((col) => {
+          const [start, end] = col.range;
+          const count = end - start + 1;
+          return (
           <div key={col.letter} className="flex flex-col gap-1.5 sm:gap-3">
             {/* Header Letter */}
             <div className={`
@@ -21,8 +28,8 @@ export const MasterBoard: React.FC<MasterBoardProps> = ({ drawnSet }) => {
             
             {/* Numbers in column */}
             <div className="grid grid-cols-1 gap-1 sm:gap-3">
-              {Array.from({ length: 15 }, (_, i) => {
-                const num = col.range[0] + i;
+              {Array.from({ length: count }, (_, i) => {
+                const num = start + i;
                 const isDrawn = drawnSet.has(num);
                 
                 return (
@@ -48,7 +55,8 @@ export const MasterBoard: React.FC<MasterBoardProps> = ({ drawnSet }) => {
               })}
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
     </div>
   );

@@ -9,9 +9,17 @@ interface HistoryRailProps {
 
 export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers, minNumber, maxNumber }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const searchNum = searchQuery.trim() === '' ? null : parseInt(searchQuery.trim(), 10);
+  const isValidSearch = searchNum !== null && !Number.isNaN(searchNum);
+  const matchCount = isValidSearch ? drawnNumbers.filter((n) => n === searchNum).length : 0;
 
   useEffect(() => {
-    if (!isModalOpen) return;
+    if (!isModalOpen) {
+      setSearchQuery('');
+      return;
+    }
     const handleEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsModalOpen(false); };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
@@ -72,23 +80,59 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers, minNumbe
           <div className="relative w-full max-w-2xl bg-slate-900 border-t sm:border border-white/10 rounded-t-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[80vh] animate-slide-up" role="dialog" aria-modal="true" aria-labelledby="history-title">
             
             {/* Modal Header */}
-            <div className="p-6 sm:p-8 border-b border-white/5 flex items-center justify-between sticky top-0 bg-slate-900/80 backdrop-blur-md z-10">
-              <div>
-                <h3 id="history-title" className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                  Full History
-                  <span className="text-sm font-bold bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20">
-                    {drawnNumbers.length}
-                  </span>
-                </h3>
-                <p className="text-slate-500 text-xs mt-1 font-bold uppercase tracking-widest">Draw sequence from newest to oldest</p>
+            <div className="p-6 sm:p-8 border-b border-white/5 sticky top-0 bg-slate-900/80 backdrop-blur-md z-10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 id="history-title" className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                    Full History
+                    <span className="text-sm font-bold bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20">
+                      {drawnNumbers.length}
+                    </span>
+                  </h3>
+                  <p className="text-slate-500 text-xs mt-1 font-bold uppercase tracking-widest">Draw sequence from newest to oldest</p>
+                </div>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-3 rounded-2xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:opacity-90 shrink-0"
+                  aria-label="Close history"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
               </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="p-3 rounded-2xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:opacity-90"
-                aria-label="Close history"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-              </button>
+              {/* Search */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                <label htmlFor="history-search" className="text-xs font-bold text-slate-500 uppercase tracking-widest shrink-0">
+                  Search number
+                </label>
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    id="history-search"
+                    type="number"
+                    min={minNumber}
+                    max={maxNumber}
+                    placeholder={`e.g. ${minNumber}-${maxNumber}`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-slate-800 border border-white/10 text-white font-bold placeholder:text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                    aria-label="Search for a drawn number"
+                  />
+                  {searchQuery.trim() !== '' && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="p-2.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                      aria-label="Clear search"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
+                  )}
+                </div>
+                {isValidSearch && (
+                  <span className="text-xs font-bold text-indigo-400 shrink-0">
+                    {matchCount === 0 ? 'No match' : `${matchCount} match(es)`}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Modal Body - Grid of drawn numbers */}
@@ -96,13 +140,14 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers, minNumbe
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 sm:gap-6">
                 {drawnNumbers.map((num, idx) => {
                   const order = drawnNumbers.length - idx;
+                  const isMatch = isValidSearch && num === searchNum;
                   return (
                     <div 
                       key={`modal-${num}-${idx}`} 
-                      className="flex flex-col items-center gap-2 group"
+                      className={`flex flex-col items-center gap-2 group ${isMatch ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900 rounded-2xl' : ''}`}
                     >
                       <div className="relative">
-                        <BingoBall number={num} size="md" active={true} minNumber={minNumber} maxNumber={maxNumber} className="group-hover:ring-2 group-hover:ring-indigo-400 group-hover:ring-offset-2 group-hover:ring-offset-slate-900 transition-all duration-200" />
+                        <BingoBall number={num} size="md" active={true} minNumber={minNumber} maxNumber={maxNumber} className={`transition-all duration-200 ${isMatch ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900' : 'group-hover:ring-2 group-hover:ring-indigo-400 group-hover:ring-offset-2 group-hover:ring-offset-slate-900'}`} />
                         <div className="absolute -top-1 -right-1 w-6 h-6 bg-slate-800 rounded-full flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-700 shadow-lg">
                           #{order}
                         </div>

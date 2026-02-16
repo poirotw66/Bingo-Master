@@ -34,6 +34,42 @@ const MINIMALIST_COLORS = {
   'O': 'bg-purple-500 border-transparent text-white',
 };
 
+/** New Year / festive: red and gold */
+const FESTIVAL_COLORS = {
+  'B': 'bg-gradient-to-br from-red-600 to-red-800 border-red-400 text-amber-50 shadow-red-900/50',
+  'I': 'bg-gradient-to-br from-amber-400 to-amber-600 border-amber-300 text-amber-950 shadow-amber-900/40',
+  'N': 'bg-gradient-to-br from-red-500 to-rose-700 border-rose-400 text-amber-50 shadow-rose-900/50',
+  'G': 'bg-gradient-to-br from-amber-500 to-yellow-600 border-amber-400 text-amber-950 shadow-amber-800/40',
+  'O': 'bg-gradient-to-br from-rose-700 to-red-900 border-rose-500 text-amber-50 shadow-rose-950/50',
+};
+
+/** Ocean: blues, teals, cyans */
+const OCEAN_COLORS = {
+  'B': 'bg-gradient-to-br from-blue-800 to-blue-950 border-blue-500 text-sky-100 shadow-blue-950/50',
+  'I': 'bg-gradient-to-br from-teal-500 to-teal-700 border-teal-400 text-white shadow-teal-900/40',
+  'N': 'bg-gradient-to-br from-cyan-400 to-cyan-600 border-cyan-300 text-cyan-950 shadow-cyan-800/40',
+  'G': 'bg-gradient-to-br from-emerald-500 to-teal-600 border-emerald-400 text-white shadow-emerald-900/40',
+  'O': 'bg-gradient-to-br from-sky-400 to-blue-500 border-sky-300 text-sky-950 shadow-sky-800/40',
+};
+
+/** Snow: ice, silver, frost */
+const SNOW_COLORS = {
+  'B': 'bg-gradient-to-br from-sky-200 to-sky-400 border-sky-300 text-sky-900 shadow-sky-600/30',
+  'I': 'bg-gradient-to-br from-slate-300 to-slate-500 border-slate-400 text-slate-900 shadow-slate-600/30',
+  'N': 'bg-gradient-to-br from-white to-slate-100 border-slate-200 text-slate-800 shadow-slate-400/40',
+  'G': 'bg-gradient-to-br from-slate-200 to-sky-200 border-sky-200 text-slate-800 shadow-sky-400/30',
+  'O': 'bg-gradient-to-br from-sky-100 to-blue-200 border-sky-300 text-sky-900 shadow-sky-500/30',
+};
+
+/** Forest: greens and browns */
+const FOREST_COLORS = {
+  'B': 'bg-gradient-to-br from-amber-800 to-amber-950 border-amber-700 text-amber-100 shadow-amber-950/50',
+  'I': 'bg-gradient-to-br from-green-600 to-green-800 border-green-500 text-green-50 shadow-green-900/50',
+  'N': 'bg-gradient-to-br from-lime-700 to-green-800 border-lime-600 text-lime-50 shadow-green-900/40',
+  'G': 'bg-gradient-to-br from-emerald-700 to-green-800 border-emerald-600 text-emerald-50 shadow-emerald-900/50',
+  'O': 'bg-gradient-to-br from-green-800 to-green-950 border-green-700 text-green-100 shadow-green-950/50',
+};
+
 const SIZE_CLASSES = {
   sm: 'w-10 h-10 text-base border-2',
   md: 'w-14 h-14 text-xl border-4',
@@ -63,6 +99,18 @@ export const BingoBall: React.FC<BingoBallProps> = ({
       case 'minimalist':
         colorClass = MINIMALIST_COLORS[letter];
         break;
+      case 'festival':
+        colorClass = FESTIVAL_COLORS[letter];
+        break;
+      case 'ocean':
+        colorClass = OCEAN_COLORS[letter];
+        break;
+      case 'snow':
+        colorClass = SNOW_COLORS[letter];
+        break;
+      case 'forest':
+        colorClass = FOREST_COLORS[letter];
+        break;
       case 'classic':
       default:
         colorClass = `bg-gradient-to-br ${CLASSIC_COLORS[letter]}`;
@@ -81,11 +129,11 @@ export const BingoBall: React.FC<BingoBallProps> = ({
         ${sizeClass}
         ${animationClass}
         ${className}
-        ${theme === 'classic' && active ? 'shadow-2xl' : ''}
+        ${(theme === 'classic' || theme === 'festival') && active ? 'shadow-2xl' : ''}
       `}
     >
-      {/* Visual flourishes for Classic Theme */}
-      {theme === 'classic' && active && (
+      {/* Visual flourishes for Classic and Festival themes */}
+      {(theme === 'classic' || theme === 'festival') && active && (
         <>
           <div className="absolute top-[10%] left-[15%] w-[30%] h-[30%] bg-white/30 rounded-full blur-[2px] pointer-events-none"></div>
           <div className="absolute inset-0 rounded-full shadow-[inset_0_-8px_16px_rgba(0,0,0,0.3)] pointer-events-none"></div>

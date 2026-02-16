@@ -1,5 +1,11 @@
 export type BingoLetter = 'B' | 'I' | 'N' | 'G' | 'O';
-export type BingoTheme = 'classic' | 'neon' | 'minimalist';
+export type BingoTheme = 'classic' | 'neon' | 'minimalist' | 'festival' | 'ocean' | 'snow' | 'forest';
+
+export const BINGO_THEME_IDS: BingoTheme[] = ['classic', 'neon', 'minimalist', 'festival', 'ocean', 'snow', 'forest'];
+
+export function isValidBingoTheme(v: unknown): v is BingoTheme {
+  return typeof v === 'string' && BINGO_THEME_IDS.includes(v as BingoTheme);
+}
 
 export interface BingoNumber {
   value: number;

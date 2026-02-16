@@ -35,6 +35,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
     { id: 'classic', name: 'Classic 3D' },
     { id: 'neon', name: 'Neon Glow' },
     { id: 'minimalist', name: 'Minimalist' },
+    { id: 'festival', name: 'New Year Festival' },
+    { id: 'ocean', name: 'Ocean' },
+    { id: 'snow', name: 'Snow' },
+    { id: 'forest', name: 'Forest' },
   ];
 
   const speeds = [

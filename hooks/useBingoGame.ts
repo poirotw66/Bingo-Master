@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession } from '../types';
+import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession, isValidBingoTheme } from '../types';
 
 const STORAGE_KEY_CURRENT = 'bingo-master-current';
 const STORAGE_KEY_HISTORY = 'bingo-master-history';
@@ -26,7 +26,9 @@ function loadCurrentFromStorage(): { drawnNumbers: number[]; settings: GameSetti
     if (!raw) return null;
     const data = JSON.parse(raw) as { drawnNumbers?: unknown; settings?: unknown };
     const drawn = Array.isArray(data.drawnNumbers) ? data.drawnNumbers.filter((n): n is number => typeof n === 'number' && n >= 1 && n <= 75) : [];
-    const settings = data.settings && typeof data.settings === 'object' ? { ...DEFAULT_SETTINGS, ...data.settings } : DEFAULT_SETTINGS;
+    const rawSettings = data.settings && typeof data.settings === 'object' ? data.settings as Record<string, unknown> : {};
+    const theme = isValidBingoTheme(rawSettings.theme) ? rawSettings.theme : DEFAULT_SETTINGS.theme;
+    const settings = { ...DEFAULT_SETTINGS, ...rawSettings, theme };
     return { drawnNumbers: drawn, settings };
   } catch {
     return null;

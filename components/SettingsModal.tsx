@@ -51,15 +51,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
       <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose}></div>
       
-      <div className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+      <div className="relative w-full max-w-md max-h-[90vh] bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div className="p-6 border-b border-white/5 flex items-center justify-between shrink-0">
           <h3 id="settings-title" className="text-xl font-black text-white uppercase tracking-tight">Game Settings</h3>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-white transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 rounded-xl" aria-label="Close settings">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <div className="p-6 space-y-8">
+        <div className="p-6 space-y-8 overflow-y-auto min-h-0 flex-1">
           {/* Volume Setting */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -162,7 +162,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
           </div>
         </div>
 
-        <div className="p-4 bg-slate-950/30 border-t border-white/5">
+        <div className="p-4 bg-slate-950/30 border-t border-white/5 shrink-0">
           <button 
             onClick={onClose}
             className="w-full py-4 bg-white text-slate-950 font-black rounded-2xl uppercase tracking-widest text-sm hover:bg-slate-200 transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 active:opacity-95"

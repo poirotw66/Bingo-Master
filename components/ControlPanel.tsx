@@ -13,7 +13,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ gameState, actions }
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
-      {/* 數據統計卡片與靜音切換 */}
+      {/* Stats card and mute toggle */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-slate-900/60 p-3 rounded-2xl border border-white/5 flex flex-col items-center">
           <span className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Drawn</span>
@@ -84,7 +84,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ gameState, actions }
       </div>
 
       <button
-        onClick={actions.resetGame}
+        onClick={() => {
+          if (count === 0) {
+            actions.resetGame();
+          } else if (window.confirm('確定要開始新局嗎？目前進度會存到歷次記錄。')) {
+            actions.resetGame();
+          }
+        }}
         className={`
           w-full py-4 rounded-2xl border transition-all text-sm font-black tracking-widest flex items-center justify-center gap-3 group uppercase
           shadow-lg active:scale-[0.98]

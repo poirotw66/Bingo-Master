@@ -104,7 +104,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
               <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Saved Sessions</label>
               {savedSessions.length > 0 && (
                 <button
-                  onClick={onClearSavedHistory}
+                  onClick={() => {
+                    if (window.confirm('確定要清除所有歷次記錄嗎？此操作無法復原。')) {
+                      onClearSavedHistory();
+                    }
+                  }}
                   className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
                 >
                   Clear all

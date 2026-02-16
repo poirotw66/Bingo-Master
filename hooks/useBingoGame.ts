@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession } from '../types';
 
 const STORAGE_KEY_CURRENT = 'bingo-master-current';
@@ -59,8 +59,10 @@ export const useBingoGame = () => {
   
   const audioContextRef = useRef<AudioContext | null>(null);
   const rollingIntervalRef = useRef<number | null>(null);
+  const storageTimeoutRef = useRef<number | null>(null);
+  const latestForStorageRef = useRef({ drawnNumbers, settings });
 
-  const drawnSet = new Set<number>(drawnNumbers);
+  const drawnSet = useMemo(() => new Set<number>(drawnNumbers), [drawnNumbers]);
   const isFinished = drawnNumbers.length >= 75;
 
   const playSound = useCallback((type: 'draw' | 'reset' | 'roll' | 'click' | 'bingo') => {
@@ -196,10 +198,19 @@ export const useBingoGame = () => {
     playSound('reset');
   }, [playSound]);
 
+  latestForStorageRef.current = { drawnNumbers, settings };
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify({ drawnNumbers, settings }));
-    } catch { /* ignore */ }
+    if (storageTimeoutRef.current) window.clearTimeout(storageTimeoutRef.current);
+    storageTimeoutRef.current = window.setTimeout(() => {
+      try {
+        const { drawnNumbers: dn, settings: s } = latestForStorageRef.current;
+        localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify({ drawnNumbers: dn, settings: s }));
+      } catch { /* ignore */ }
+      storageTimeoutRef.current = null;
+    }, 400);
+    return () => {
+      if (storageTimeoutRef.current) window.clearTimeout(storageTimeoutRef.current);
+    };
   }, [drawnNumbers, settings]);
 
   const clearSavedHistory = useCallback(() => {

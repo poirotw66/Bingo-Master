@@ -8,7 +8,7 @@ import { SettingsModal } from './components/SettingsModal';
 
 export default function App() {
   const { gameState, actions } = useBingoGame();
-  const { currentNumber, drawnNumbers, allDrawnSet, isRolling, rollingValue, settings } = gameState;
+  const { currentNumber, drawnNumbers, allDrawnSet, isRolling, rollingValue, settings, savedSessions } = gameState;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -109,6 +109,8 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)} 
         settings={settings}
         onUpdate={actions.updateSettings}
+        savedSessions={savedSessions}
+        onClearSavedHistory={actions.clearSavedHistory}
       />
 
       <style dangerouslySetInnerHTML={{ __html: `

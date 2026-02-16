@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { GameState, getLetterForNumber, BingoNumber, GameSettings } from '../types';
+import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession } from '../types';
+
+const STORAGE_KEY_CURRENT = 'bingo-master-current';
+const STORAGE_KEY_HISTORY = 'bingo-master-history';
+const MAX_SAVED_SESSIONS = 50;
 
 export interface BingoGameActions {
   drawNumber: () => void;
@@ -7,6 +11,7 @@ export interface BingoGameActions {
   toggleAutoPlay: () => void;
   toggleMute: () => void;
   updateSettings: (newSettings: Partial<GameSettings>) => void;
+  clearSavedHistory: () => void;
 }
 
 const DEFAULT_SETTINGS: GameSettings = {
@@ -15,14 +20,42 @@ const DEFAULT_SETTINGS: GameSettings = {
   theme: 'classic',
 };
 
+function loadCurrentFromStorage(): { drawnNumbers: number[]; settings: GameSettings } | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_CURRENT);
+    if (!raw) return null;
+    const data = JSON.parse(raw) as { drawnNumbers?: unknown; settings?: unknown };
+    const drawn = Array.isArray(data.drawnNumbers) ? data.drawnNumbers.filter((n): n is number => typeof n === 'number' && n >= 1 && n <= 75) : [];
+    const settings = data.settings && typeof data.settings === 'object' ? { ...DEFAULT_SETTINGS, ...data.settings } : DEFAULT_SETTINGS;
+    return { drawnNumbers: drawn, settings };
+  } catch {
+    return null;
+  }
+}
+
+function loadHistoryFromStorage(): SavedSession[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_HISTORY);
+    if (!raw) return [];
+    const data = JSON.parse(raw) as { sessions?: unknown[] };
+    if (!Array.isArray(data.sessions)) return [];
+    return data.sessions.filter((s): s is SavedSession => 
+      s && typeof s === 'object' && typeof s.id === 'string' && Array.isArray(s.drawnNumbers) && typeof s.createdAt === 'number'
+    ).slice(0, MAX_SAVED_SESSIONS);
+  } catch {
+    return [];
+  }
+}
+
 export const useBingoGame = () => {
-  const [drawnNumbers, setDrawnNumbers] = useState<number[]>([]);
+  const [drawnNumbers, setDrawnNumbers] = useState<number[]>(() => loadCurrentFromStorage()?.drawnNumbers ?? []);
   const [currentNumber, setCurrentNumber] = useState<BingoNumber | null>(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [isRolling, setIsRolling] = useState(false);
   const [rollingValue, setRollingValue] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
-  const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<GameSettings>(() => loadCurrentFromStorage()?.settings ?? DEFAULT_SETTINGS);
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>(() => loadHistoryFromStorage());
   
   const audioContextRef = useRef<AudioContext | null>(null);
   const rollingIntervalRef = useRef<number | null>(null);
@@ -146,10 +179,35 @@ export const useBingoGame = () => {
     setIsAutoPlaying(false);
     setIsRolling(false);
     setRollingValue(null);
-    setDrawnNumbers([]);
+    setDrawnNumbers(prev => {
+      if (prev.length > 0) {
+        const session: SavedSession = { id: `session-${Date.now()}`, drawnNumbers: [...prev], createdAt: Date.now() };
+        setSavedSessions(s => {
+          const next = [session, ...s].slice(0, MAX_SAVED_SESSIONS);
+          try {
+            localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify({ sessions: next }));
+          } catch { /* ignore */ }
+          return next;
+        });
+      }
+      return [];
+    });
     setCurrentNumber(null);
     playSound('reset');
   }, [playSound]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify({ drawnNumbers, settings }));
+    } catch { /* ignore */ }
+  }, [drawnNumbers, settings]);
+
+  const clearSavedHistory = useCallback(() => {
+    setSavedSessions([]);
+    try {
+      localStorage.removeItem(STORAGE_KEY_HISTORY);
+    } catch { /* ignore */ }
+  }, []);
 
   const toggleAutoPlay = useCallback(() => {
     if (isFinished && !isAutoPlaying) return;
@@ -185,8 +243,9 @@ export const useBingoGame = () => {
       isRolling,
       rollingValue,
       isMuted,
-      settings
+      settings,
+      savedSessions
     }, 
-    actions: { drawNumber, resetGame, toggleAutoPlay, toggleMute, updateSettings } 
+    actions: { drawNumber, resetGame, toggleAutoPlay, toggleMute, updateSettings, clearSavedHistory } 
   };
 };

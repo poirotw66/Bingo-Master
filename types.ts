@@ -22,6 +22,14 @@ export interface GameState {
   rollingValue: number | null;
   isMuted: boolean;
   settings: GameSettings;
+  /** Past sessions saved to localStorage (newest first) */
+  savedSessions: SavedSession[];
+}
+
+export interface SavedSession {
+  id: string;
+  drawnNumbers: number[];
+  createdAt: number;
 }
 
 export const BINGO_COLUMNS = [

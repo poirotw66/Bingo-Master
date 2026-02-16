@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BingoBall } from './BingoBall';
 
 interface HistoryRailProps {
@@ -7,6 +7,13 @@ interface HistoryRailProps {
 
 export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleEscape = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsModalOpen(false); };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isModalOpen]);
 
   return (
     <>
@@ -93,7 +100,7 @@ export const HistoryRail: React.FC<HistoryRailProps> = ({ drawnNumbers }) => {
                       className="flex flex-col items-center gap-2 group"
                     >
                       <div className="relative">
-                        <BingoBall number={num} size="md" active={true} className="group-hover:scale-110 transition-transform duration-300" />
+                        <BingoBall number={num} size="md" active={true} className="group-hover:ring-2 group-hover:ring-indigo-400 group-hover:ring-offset-2 group-hover:ring-offset-slate-900 transition-all duration-200" />
                         <div className="absolute -top-1 -right-1 w-6 h-6 bg-slate-800 rounded-full flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-700 shadow-lg">
                           #{order}
                         </div>

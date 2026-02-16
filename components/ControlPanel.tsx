@@ -15,13 +15,13 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ gameState, actions }
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
       {/* Stats card and mute toggle */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-slate-900/60 p-3 rounded-2xl border border-white/5 flex flex-col items-center">
+        <div className="bg-slate-900/60 p-3 rounded-2xl border border-white/10 flex flex-col items-center">
           <span className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Drawn</span>
           <span className="text-white text-2xl font-black">{count} <span className="text-slate-600 text-sm">/ 75</span></span>
         </div>
         <button 
           onClick={actions.toggleMute}
-          className="bg-slate-900/60 p-3 rounded-2xl border border-white/5 flex flex-col items-center group transition-colors duration-200 hover:bg-slate-800 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
+          className="bg-slate-900/60 p-3 rounded-2xl border border-white/10 flex flex-col items-center group transition-colors duration-200 hover:bg-slate-800 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
           aria-label={isMuted ? 'Unmute sound' : 'Mute sound'}
         >
           <span className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Quick Mute</span>

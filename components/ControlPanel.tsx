@@ -14,28 +14,44 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ gameState, actions }
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
-      {/* Stats card and mute toggle */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Stats card, mute toggle, TTS toggle */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-slate-900/60 p-3 rounded-2xl border border-white/10 flex flex-col items-center">
           <span className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Drawn</span>
-          <span className="text-white text-2xl font-black">{count} <span className="text-slate-600 text-sm">/ {total}</span></span>
+          <span className="text-white text-xl sm:text-2xl font-black">{count} <span className="text-slate-600 text-sm">/ {total}</span></span>
         </div>
         <button 
           onClick={actions.toggleMute}
           className="bg-slate-900/60 p-3 rounded-2xl border border-white/10 flex flex-col items-center group transition-colors duration-200 hover:bg-slate-800 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
           aria-label={isMuted ? 'Unmute sound' : 'Mute sound'}
         >
-          <span className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Quick Mute</span>
-          <div className="flex items-center gap-2">
+          <span className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1">Mute</span>
+          <div className="flex items-center gap-1 sm:gap-2">
             {isMuted ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-red-500 shrink-0"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-green-500 shrink-0"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            )}
+            <span className={`text-xs sm:text-sm font-black uppercase truncate ${isMuted ? 'text-red-500' : 'text-green-500'}`}>{isMuted ? 'Off' : 'On'}</span>
+          </div>
+        </button>
+        <button 
+          onClick={() => actions.updateSettings({ voiceEnabled: !settings.voiceEnabled })}
+          className="bg-slate-900/60 p-3 rounded-2xl border border-white/10 flex flex-col items-center group transition-colors duration-200 hover:bg-slate-800 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#020617]"
+          aria-label={settings.voiceEnabled ? 'Turn off number announcement' : 'Turn on number announcement'}
+          title={settings.voiceEnabled ? 'Turn off TTS' : 'Turn on TTS'}
+        >
+          <span className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1">TTS</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            {settings.voiceEnabled ? (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-red-500"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg>
-                <span className="text-red-500 text-lg font-black uppercase">Muted</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-indigo-400 shrink-0" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                <span className="text-indigo-400 text-xs sm:text-sm font-black uppercase truncate">On</span>
               </>
             ) : (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-green-500"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                <span className="text-green-500 text-lg font-black uppercase">Active</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-500 shrink-0" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                <span className="text-slate-500 text-xs sm:text-sm font-black uppercase truncate">Off</span>
               </>
             )}
           </div>

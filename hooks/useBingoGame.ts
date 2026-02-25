@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession, isValidBingoTheme, DRAW_RANGE_MIN, DRAW_RANGE_MAX } from '../types';
+import { GameState, getLetterForNumber, BingoNumber, GameSettings, SavedSession, isValidBingoTheme, isValidVoiceLanguage, VoiceLanguage, DRAW_RANGE_MIN, DRAW_RANGE_MAX } from '../types';
 
 const STORAGE_KEY_CURRENT = 'bingo-master-current';
 const STORAGE_KEY_HISTORY = 'bingo-master-history';
@@ -26,7 +26,52 @@ const DEFAULT_SETTINGS: GameSettings = {
   theme: 'classic',
   minNumber: 1,
   maxNumber: 75,
+  voiceEnabled: true,
+  voiceLanguage: 'zh',
 };
+
+/** Convert number to Traditional Chinese for TTS (e.g. 12 -> "十二"). */
+function numberToChineseTraditional(n: number): string {
+  if (n < 0 || n > 199) return String(n);
+  const digits = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  if (n === 0) return '零';
+  if (n <= 10) return n === 10 ? '十' : digits[n];
+  if (n < 20) return `十${digits[n - 10]}`;
+  if (n < 100) {
+    const tens = Math.floor(n / 10);
+    const ones = n % 10;
+    return `${digits[tens]}十${ones ? digits[ones] : ''}`;
+  }
+  if (n === 100) return '一百';
+  if (n < 200) {
+    const ones = n % 100;
+    return ones === 0 ? '一百' : `一百${ones < 10 ? '零' : ''}${numberToChineseTraditional(ones)}`;
+  }
+  return '兩百';
+}
+
+/** Build announcement text for the drawn number in the given language (number only). */
+function getAnnouncementText(value: number, lang: VoiceLanguage): string {
+  if (lang === 'zh') {
+    return numberToChineseTraditional(value);
+  }
+  return String(value);
+}
+
+/** Speak the drawn number using Web Speech API (number only). */
+function speakDrawnNumber(value: number, voiceEnabled: boolean, voiceLanguage: VoiceLanguage): void {
+  if (!voiceEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
+  try {
+    window.speechSynthesis.cancel();
+    const text = getAnnouncementText(value, voiceLanguage);
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = voiceLanguage === 'zh' ? 'zh-TW' : 'en-US';
+    u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  } catch {
+    // Speech synthesis may be unavailable or blocked
+  }
+}
 
 function clampRange(min: number, max: number): { minNumber: number; maxNumber: number } {
   const minNumber = Math.max(DRAW_RANGE_MIN, Math.min(DRAW_RANGE_MAX, Math.floor(min)));
@@ -46,7 +91,9 @@ function loadCurrentFromStorage(): { drawnNumbers: number[]; settings: GameSetti
     const rawMin = typeof rawSettings.minNumber === 'number' ? rawSettings.minNumber : DEFAULT_SETTINGS.minNumber;
     const rawMax = typeof rawSettings.maxNumber === 'number' ? rawSettings.maxNumber : DEFAULT_SETTINGS.maxNumber;
     const { minNumber, maxNumber } = clampRange(rawMin, rawMax);
-    const settings = { ...DEFAULT_SETTINGS, ...rawSettings, theme, minNumber, maxNumber };
+    const voiceEnabled = typeof rawSettings.voiceEnabled === 'boolean' ? rawSettings.voiceEnabled : DEFAULT_SETTINGS.voiceEnabled;
+    const voiceLanguage = isValidVoiceLanguage(rawSettings.voiceLanguage) ? rawSettings.voiceLanguage : DEFAULT_SETTINGS.voiceLanguage;
+    const settings = { ...DEFAULT_SETTINGS, ...rawSettings, theme, minNumber, maxNumber, voiceEnabled, voiceLanguage };
     const validDrawn = drawn.filter((n) => n >= minNumber && n <= maxNumber);
     return { drawnNumbers: validDrawn, settings };
   } catch {
@@ -183,11 +230,12 @@ export const useBingoGame = () => {
         setIsRolling(false);
         setRollingValue(null);
         playSound('draw');
+        speakDrawnNumber(nextVal, settings.voiceEnabled, settings.voiceLanguage);
       }
     }, 60);
     
     rollingIntervalRef.current = interval;
-  }, [drawnSet, isFinished, isRolling, playSound, settings.minNumber, settings.maxNumber]);
+  }, [drawnSet, isFinished, isRolling, playSound, settings.minNumber, settings.maxNumber, settings.voiceEnabled, settings.voiceLanguage]);
 
   useEffect(() => {
     if (drawnNumbers.length > 0 && !isRolling) {

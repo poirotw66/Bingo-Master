@@ -12,12 +12,23 @@ export interface BingoNumber {
   letter: BingoLetter;
 }
 
+/** Language for number announcement (text-to-speech) when a ball is drawn. */
+export type VoiceLanguage = 'zh' | 'en';
+
+export function isValidVoiceLanguage(v: unknown): v is VoiceLanguage {
+  return v === 'zh' || v === 'en';
+}
+
 export interface GameSettings {
   autoPlaySpeed: number; // in ms
   volume: number; // 0 to 1
   theme: BingoTheme;
   minNumber: number;
   maxNumber: number;
+  /** Whether to announce the drawn number by voice. */
+  voiceEnabled: boolean;
+  /** Language for number announcement: Chinese (zh) or English (en). */
+  voiceLanguage: VoiceLanguage;
 }
 
 export const DRAW_RANGE_MIN = 1;

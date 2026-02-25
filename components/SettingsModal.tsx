@@ -19,8 +19,15 @@ function formatSessionDate(ts: number): string {
   return d.toLocaleDateString([], { dateStyle: 'short' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function hasChineseVoice(): boolean {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return false;
+  const voices = window.speechSynthesis.getVoices();
+  return voices.some((v) => v.lang.startsWith('zh'));
+}
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings, onUpdate, savedSessions, onClearSavedHistory }) => {
   const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
+  const [chineseVoiceAvailable, setChineseVoiceAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -28,6 +35,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const check = () => setChineseVoiceAvailable(hasChineseVoice());
+    check();
+    window.speechSynthesis?.addEventListener('voiceschanged', check);
+    return () => window.speechSynthesis?.removeEventListener('voiceschanged', check);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -60,6 +75,44 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
         </div>
 
         <div className="p-6 space-y-8 overflow-y-auto min-h-0 flex-1">
+          {/* Number announcement (voice) */}
+          <div className="space-y-3">
+            <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Number Announcement</label>
+            <p className="text-slate-500 text-xs">When a number is drawn, announce it by voice. Choose language below.</p>
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-sm font-bold text-slate-300">Announce by voice</span>
+              <button
+                role="switch"
+                aria-checked={settings.voiceEnabled}
+                onClick={() => onUpdate({ voiceEnabled: !settings.voiceEnabled })}
+                className={`relative inline-flex h-7 w-12 shrink-0 rounded-full border transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${settings.voiceEnabled ? 'bg-indigo-500 border-indigo-400' : 'bg-slate-700 border-slate-600'}`}
+              >
+                <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200 mt-1 ${settings.voiceEnabled ? 'translate-x-6 ml-0.5' : 'translate-x-1 ml-0.5'}`} />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              {(['zh', 'en'] as const).map((lang) => {
+                const isChinese = lang === 'zh';
+                const available = isChinese ? chineseVoiceAvailable : true;
+                const disabled = !settings.voiceEnabled || (isChinese && available === false);
+                return (
+                  <button
+                    key={lang}
+                    onClick={() => onUpdate({ voiceLanguage: lang })}
+                    disabled={disabled}
+                    title={isChinese && available === false ? 'No Chinese TTS on this device' : undefined}
+                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed ${settings.voiceLanguage === lang ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                  >
+                    {lang === 'zh' ? '中文' : 'English'}
+                  </button>
+                );
+              })}
+            </div>
+            {chineseVoiceAvailable === false && (
+              <p className="text-slate-500 text-xs">Chinese voice is optional; this device has no Chinese TTS. Use English or install a Chinese voice in system settings.</p>
+            )}
+          </div>
+
           {/* Volume Setting */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
